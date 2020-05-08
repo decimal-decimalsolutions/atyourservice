@@ -1,4 +1,8 @@
 https://codenotfound.com/spring-ws-https-client-server-example.html
+
+https://stackoverflow.com/questions/537040/how-to-connect-to-a-secure-website-using-ssl-in-java-with-a-pkcs12-file
+
+
 You can still use same file as trustStore and keyStore in Java to avoid maintaining two separate files, 
 but its good idea to segregate public keys and private keys in two different files, its more 
 verbose and self explanatory that which one holds CA certificates to trust server 
