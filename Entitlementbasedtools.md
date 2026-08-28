@@ -651,4 +651,20 @@ And one subtle but important point: “one graph per pod” does not mean one co
 
 Source freshness: Python memory-management behavior checked against the current Python documentation (published/crawled August 2026). 
 
-Confidence: High.
+
+
+Implementation Strategy for the 40K-User Architecture
+ * Runtime Initialization Pattern
+   * Instantiate the compiled LangGraph, ToolRegistry, database pools, and HTTP clients globally inside each Kubernetes pod upon startup.
+   * Avoid any per-request re-instantiation of heavy objects to prevent pymalloc arena fragmentation and high garbage collection overhead.
+ * Per-Request Entitlement Flow
+   * Evaluate the incoming user's context against the truth table to derive an allowed_tools list on every request.
+   * Inject allowed_tools directly into the transient request state without mutating the global, immutable ToolRegistry.
+ * Defense-in-Depth Authorization
+   * Implement an explicit tool authorization layer directly before execution.
+   * Intercept tool calls emitted by the LLM to cross-reference them against the request-specific permission set, throwing a 403 / TOOL_NOT_ENTITLED error if unauthorized.
+ * State Separation & Persistence
+   * Keep active Python memory footprint minimal by routing all conversation history, checkpoints, and large tool responses directly to MongoDBSaver via unique thread_id parameters.
+   * Store large documents and payloads in external stores (vector DB/S3), passing lightweight reference identifiers within the LangGraph state.
+
+
